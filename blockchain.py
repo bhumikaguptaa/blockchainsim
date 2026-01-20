@@ -41,48 +41,58 @@ def process_transaction(transaction: Transaction, state):
 
     return state
 
+state = {} #the ledger
+users = int(input("How many users are there?: "))
+usernames = input("List the names in a comma separated manner:")
+namelist = usernames.split(",")
+if users != len(namelist):
+    print("username count doesnt match provided usernames")
+    exit(0)
 
-state = {"Alice": 50, "Bob":50, "Charlie":50} #the ledger
-# block1_transaction = {"Sender":"Alice", "Recipient":"Bob", "Amount":5}
-block1_transaction=[]
+print("Default starting amount is $100")
+for name in namelist:
+    state[name] = 100
+print(state)
 
-for i in range(10):
+blockchain=[]
+prevhash=0
+for i in range(10): # This loop determines the number of blocks
     
-    sender = input("Enter name of sender: ")
-    receiver=input("Enter Receiver name: ")
-    amount = int(input("Enter amount: "))
-    newtrans = Transaction(sender,receiver,amount)
-    print(f"Sender: {newtrans.sender}")
-    block1_transaction.append(newtrans)
-    for t in block1_transaction:
-        state = process_transaction(t,state)
-    c=input("Do u want more trans? (Y,n)")
+    blockn_transaction=[]
+
+    for i in range(10):#This loop is num transactions
+        
+        sender = input("Enter name of sender: ")
+        receiver=input("Enter Receiver name: ")
+        amount = int(input("Enter amount: "))
+        newtrans = Transaction(sender,receiver,amount)
+        print(f"Sender: {newtrans.sender}")
+        blockn_transaction.append(newtrans)
+        for t in blockn_transaction:
+            state = process_transaction(t,state)
+        c=input("Do u want more trans? (Y,n)")
+        if not (c=='y' or c=='Y'):
+            break
+    blockn = {"transactions":blockn_transaction, "previous_hash":prevhash, "nonce":0}
+    prevhash=mine_block(blockn)
+    blockchain.append(blockn)
+    c=input("Do you want more blocks?: (Y,n) ")
     if not (c=='y' or c=='Y'):
-        break
+            break
 
 
-block2_transaction = []
-for i in range(10):
-    sender = input("Enter name of sender: ")
-    receiver=input("Enter Receiver name: ")
-    amount = int(input("Enter amount: "))
-    newtrans = Transaction(sender,receiver,amount)
-    print(f"Sender: {newtrans.sender}")
-    block2_transaction.append(newtrans)
-    for t in block2_transaction:
-        state = process_transaction(t,state)
-    c=input("Do u want more trans? (Y,n)")
-    if not (c=='y' or c=='Y'):
-        break
 
+print("Final Blockchain:")
+count=1
+for block in blockchain:
+    print("Block number",count)
+    count+=1
+    trans=block["transactions"]
+    print("Transactions:")
+    for t in trans:
+        print(t)
+    print(f"prev_nonce: {block["previous_hash"]}")
+    print(f"Current nonce: {block['nonce']}")
+    print("="*20)
 
-block = {"transactions": block1_transaction, "previous_hash": "0", "nonce": 0}
-prevhash = mine_block(block)
-block2 = {"transactions": block2_transaction, "previous_hash": prevhash, "nonce": 0}
-mine_block(block2)
-
-blockchain = [block]
-blockchain.append(block2)
-
-print("Final Blockchain:", blockchain)
 print("Final State:", state)
