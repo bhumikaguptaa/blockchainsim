@@ -2,6 +2,7 @@
 #the hash
 import hashlib
 import json
+from transaction import Transaction
 #message = "Hello Gemini!"
 #hash_object = hashlib.sha256(message.encode())
 #print(hash_object.hexdigest())
@@ -16,41 +17,68 @@ import json
 
 # #proof of work
 def mine_block(block):
-    blockjson = json.dumps(block, sort_keys=True)
+    blockjson = json.dumps(block, default=lambda o: o.__dict__, sort_keys=True)
     blockjson_object = hashlib.sha256(blockjson.encode())
     while blockjson_object.hexdigest()[0:4] != "0000":
         block["nonce"] +=  1
-        blockjson = json.dumps(block, sort_keys=True)
+        blockjson = json.dumps(block, default=lambda o: o.__dict__, sort_keys=True)
         blockjson_object = hashlib.sha256(blockjson.encode())
     return block["nonce"]
 
 
 ##logic -- acount balance state
-def is_valid(transaction, state):
-    if transaction['Sender'] not in state or transaction['Recipient'] not in state:
+def is_valid(transaction: Transaction, state):
+    if transaction.sender not in state or transaction.receiver not in state:
         return False
-    if state[transaction['Sender']] < transaction['Amount']:
+    if state[transaction.sender] < transaction.amount:
         return False
     return True
 
-def process_transaction(transaction, state):
+def process_transaction(transaction: Transaction, state):
     if is_valid(transaction, state) == True:
-        state[transaction["Sender"]] = state[transaction['Sender']] - transaction["Amount"] 
-        state[transaction["Recipient"]] = state[transaction['Recipient']] + transaction["Amount"]
+        state[transaction.sender] = state[transaction.sender] - transaction.amount 
+        state[transaction.receiver] = state[transaction.receiver] + transaction.amount
 
     return state
 
 
 state = {"Alice": 50, "Bob":50} #the ledger
-block1_transaction = {"Sender":"Alice", "Recipient":"Bob", "Amount":5}
+# block1_transaction = {"Sender":"Alice", "Recipient":"Bob", "Amount":5}
+block1_transaction=[]
 
-block2_transactions = [{"Sender":"Bob", "Recipient":"Alice", "Amount":2}]
-for transaction in block2_transactions:
-    state = process_transaction(transaction, state)
+for i in range(10):
+    
+    sender = input("Enter name of sender: ")
+    receiver=input("Enter Receiver name: ")
+    amount = int(input("Enter amount: "))
+    newtrans = Transaction(sender,receiver,amount)
+    print(f"Sender: {newtrans.sender}")
+    block1_transaction.append(newtrans)
+    for t in block1_transaction:
+        state = process_transaction(t,state)
+    c=input("Do u want more trans? (Y,n)")
+    if not (c=='y' or c=='Y'):
+        break
 
-block = {"transactions": [block1_transaction], "previous_hash": "0", "nonce": 0}
-mine_block(block)
-block2 = {"transactions": block2_transactions, "previous_hash": "0000c622041716a4d0e72d844e10a7021cb0bff7cca5daac90bcc6da1e5e01f1", "nonce": 0}
+
+block2_transaction = []
+for i in range(10):
+    sender = input("Enter name of sender: ")
+    receiver=input("Enter Receiver name: ")
+    amount = int(input("Enter amount: "))
+    newtrans = Transaction(sender,receiver,amount)
+    print(f"Sender: {newtrans.sender}")
+    block2_transaction.append(newtrans)
+    for t in block2_transaction:
+        state = process_transaction(t,state)
+    c=input("Do u want more trans? (Y,n)")
+    if not (c=='y' or c=='Y'):
+        break
+
+
+block = {"transactions": block1_transaction, "previous_hash": "0", "nonce": 0}
+prevhash = mine_block(block)
+block2 = {"transactions": block2_transaction, "previous_hash": prevhash, "nonce": 0}
 mine_block(block2)
 
 blockchain = [block]
