@@ -3,7 +3,7 @@
 import hashlib
 import json
 from transaction import Transaction
-#message = "Hello Gemini!"
+#message = "Hello world!"
 #hash_object = hashlib.sha256(message.encode())
 #print(hash_object.hexdigest())
 #transaction
@@ -42,7 +42,7 @@ def process_transaction(transaction: Transaction, state):
     return state
 
 
-state = {"Alice": 50, "Bob":50} #the ledger
+state = {"Alice": 50, "Bob":50, "Charlie":50} #the ledger
 # block1_transaction = {"Sender":"Alice", "Recipient":"Bob", "Amount":5}
 block1_transaction=[]
 
